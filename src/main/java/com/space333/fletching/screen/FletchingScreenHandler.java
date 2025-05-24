@@ -4,14 +4,15 @@ import com.space333.fletching.Fletching;
 import com.space333.fletching.util.FletchingRecipes;
 import com.space333.fletching.util.ModTags;
 import net.minecraft.block.Blocks;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.PotionContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.CraftingResultInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.item.*;
+import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.util.math.BlockPos;
@@ -35,8 +36,12 @@ public class FletchingScreenHandler extends ScreenHandler {
     private static final int HOTBAR_END = 40;
 
     private static final int ARROW_OUTPUT_RATIO = 4;
+    private static final int POTION_ARROW_RATIO = 1;
+    private static final int SPLASH_ARROW_RATIO = 8;
+    private static final int LINGERING_ARROW_RATIO = 64;
 
-    private int inputUsage;
+    private boolean isCrafting;
+    private boolean isTipping;
 
     private final Inventory result = new CraftingResultInventory();
     final Inventory input = new SimpleInventory(3) {
@@ -63,14 +68,34 @@ public class FletchingScreenHandler extends ScreenHandler {
 
     @Override
     public void onContentChanged(Inventory inventory) {
-        ItemStack FeatherStack = inventory.getStack(INPUT1_ID);
-        ItemStack ShaftStack = inventory.getStack(INPUT2_ID);
-        ItemStack TipStack = inventory.getStack(INPUT3_ID);
-        ItemStack outputStack = ItemStack.EMPTY;
+        ItemStack featherStack = inventory.getStack(INPUT1_ID);
+        ItemStack shaftStack = inventory.getStack(INPUT2_ID);
+        ItemStack tipStack = inventory.getStack(INPUT3_ID);
 
-        int inputCount = Math.min(FeatherStack.getCount(), ShaftStack.getCount());
-        inputCount = Math.min(TipStack.getCount(), inputCount);
-        int outputCount = 0;
+        isCrafting = false;
+        isTipping = false;
+
+        if(!featherStack.isEmpty() && !shaftStack.isEmpty() && !tipStack.isEmpty()) {
+            updateCraftingArrow(featherStack, shaftStack, tipStack);
+            isCrafting = true;
+        }
+        else if(featherStack.isEmpty() && !shaftStack.isEmpty() && !tipStack.isEmpty()) {
+            updateTippedArrow(shaftStack, tipStack);
+            isTipping = true;
+        }
+        else {
+            this.result.setStack(0, ItemStack.EMPTY);
+        }
+
+
+
+    }
+
+    private void updateCraftingArrow(ItemStack featherStack, ItemStack shaftStack, ItemStack tipStack) {
+        ItemStack outputStack = ItemStack.EMPTY;
+        int inputCount = Math.min(featherStack.getCount(), shaftStack.getCount());
+        inputCount = Math.min(tipStack.getCount(), inputCount);
+        int outputCount;
         if(inputCount > 64/ARROW_OUTPUT_RATIO) {
             outputCount = 64;
         }
@@ -78,14 +103,73 @@ public class FletchingScreenHandler extends ScreenHandler {
             outputCount = inputCount * ARROW_OUTPUT_RATIO;
         }
 
-        Item output = FletchingRecipes.getRecipeOutput(FeatherStack.getItem(), ShaftStack.getItem(), TipStack.getItem());
+        Item output = FletchingRecipes.getRecipeOutput(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem());
 
         if (output != Items.AIR) {
             outputStack = new ItemStack(output, outputCount);
         }
 
-        this.inputUsage = inputCount;
         this.result.setStack(0, outputStack);
+    }
+
+    private void updateTippedArrow(ItemStack arrowStack, ItemStack potionStack) {
+        ItemStack outputStack = ItemStack.EMPTY;
+        if(arrowStack.isIn(ItemTags.ARROWS)) {
+            int arrowCount = arrowStack.getCount();
+            if(potionStack.getItem() == Items.POTION) {
+                int potionCount = potionStack.getCount();
+                PotionContentsComponent potionContentsComponent = potionStack.get(DataComponentTypes.POTION_CONTENTS);
+                outputStack = new ItemStack(Items.TIPPED_ARROW, Math.min(arrowCount, potionCount * POTION_ARROW_RATIO));
+                outputStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
+            }
+            else if(potionStack.getItem() == Items.SPLASH_POTION) {
+                int potionCount = potionStack.getCount();
+                PotionContentsComponent potionContentsComponent = potionStack.get(DataComponentTypes.POTION_CONTENTS);
+                outputStack = new ItemStack(Items.TIPPED_ARROW, Math.min(arrowCount, potionCount * SPLASH_ARROW_RATIO));
+                outputStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
+            }
+            else if(potionStack.getItem() == Items.LINGERING_POTION) {
+                int potionCount = potionStack.getCount();
+                PotionContentsComponent potionContentsComponent = potionStack.get(DataComponentTypes.POTION_CONTENTS);
+                outputStack = new ItemStack(Items.TIPPED_ARROW, Math.min(arrowCount, potionCount * LINGERING_ARROW_RATIO));
+                outputStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
+            }
+        }
+
+        this.result.setStack(0, outputStack);
+    }
+
+    public void onTakeItem(PlayerEntity player, ItemStack itemStack) {
+        int outputCount = itemStack.getCount();
+
+        if(isCrafting) {
+            int inputTake = outputCount/ARROW_OUTPUT_RATIO;
+
+            for(int i = 0; i <= INPUT3_ID; i++) {
+                this.input.removeStack(i, inputTake);
+            }
+        }
+        else if(isTipping) {
+            ItemStack arrowStack = this.input.getStack(INPUT2_ID);
+            ItemStack potionStack = this.input.getStack(INPUT3_ID);
+
+            if(potionStack.getItem() == Items.POTION) {
+                arrowStack.decrement(outputCount);
+                potionStack.decrement((int) Math.ceil((double)outputCount/POTION_ARROW_RATIO));
+            }
+            else if(potionStack.getItem() == Items.SPLASH_POTION) {
+                arrowStack.decrement(outputCount);
+                potionStack.decrement((int) Math.ceil((double)outputCount/SPLASH_ARROW_RATIO));
+            }
+            else if(potionStack.getItem() == Items.LINGERING_POTION) {
+                arrowStack.decrement(outputCount);
+                potionStack.decrement((int) Math.ceil((double)outputCount/LINGERING_ARROW_RATIO));
+            }
+            this.input.setStack(INPUT2_ID, arrowStack);
+            this.input.setStack(INPUT3_ID, potionStack);
+        }
+
+
     }
 
     private void getInputSlots() {
@@ -98,13 +182,14 @@ public class FletchingScreenHandler extends ScreenHandler {
         this.addSlot(new Slot(this.input, INPUT2_ID, INPUT1_X + INPUT_WIDTH, INPUT1_Y - INPUT_HEIGHT) {
             @Override
             public boolean canInsert(ItemStack itemStack) {
-                return itemStack.isIn(ModTags.Items.ARROW_SHAFT);
+                return itemStack.isIn(ModTags.Items.ARROW_SHAFT) || itemStack.isIn(ItemTags.ARROWS);
             }
         });
         this.addSlot(new Slot(this.input, INPUT3_ID, INPUT1_X + 2*INPUT_WIDTH, INPUT1_Y - 2*INPUT_HEIGHT) {
             @Override
             public boolean canInsert(ItemStack itemStack) {
-                return itemStack.isIn(ModTags.Items.ARROW_TIP);
+                boolean isPotion = itemStack.getItem() == Items.POTION || itemStack.getItem() == Items.LINGERING_POTION || itemStack.getItem() == Items.SPLASH_POTION;
+                return itemStack.isIn(ModTags.Items.ARROW_TIP) || isPotion;
             }
         });
     }
@@ -122,16 +207,6 @@ public class FletchingScreenHandler extends ScreenHandler {
             }
         });
     }
-
-    public void onTakeItem(PlayerEntity player, ItemStack itemStack) {
-        int inputTake = itemStack.getCount()/ARROW_OUTPUT_RATIO;
-
-        for(int i = 0; i <= INPUT3_ID; i++) {
-            this.input.removeStack(i, inputTake);
-        }
-
-    }
-
 
     @Override
     public ItemStack quickMove(PlayerEntity player, int slot) {

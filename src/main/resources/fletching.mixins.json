@@ -3,7 +3,8 @@
   "package": "com.space333.fletching.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "FletchingTableBlockMixin"
+    "FletchingTableBlockMixin",
+    "potion.ItemsMixin"
   ],
   "injectors": {
     "defaultRequire": 1

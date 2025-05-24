@@ -33,4 +33,7 @@ public class FletchingRecipes {
         recipes.put(List.of(feather, shaft, tip), output);
     }
 
+
+
+
 }
