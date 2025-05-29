@@ -1,9 +1,15 @@
 package com.space333.fletching;
 
+import com.space333.fletching.Component.ModDataComponentType;
+import com.space333.fletching.entity.custom.SpecialArrowEntity;
+import com.space333.fletching.item.ModItems;
 import com.space333.fletching.screen.ModScreenHandlers;
-import com.space333.fletching.util.FletchingRecipes;
+import com.space333.fletching.util.ComponentHelper;
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.server.world.ChunkTicketType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,9 +17,16 @@ public class Fletching implements ModInitializer {
 	public static final String MOD_ID = "fletching";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
+	public static final ChunkTicketType ARROW_TICKET = Registry.register(Registries.TICKET_TYPE, "special_arrow", new ChunkTicketType(40L, false, ChunkTicketType.Use.LOADING_AND_SIMULATION));
+
+
 	@Override
 	public void onInitialize() {
-		FletchingRecipes.createAllRecipes();
+		ComponentHelper.createAllArrowIDs();
+
 		ModScreenHandlers.registerScreenHandlers();
+		ModDataComponentType.registerDataComponentTypes();
+		ModItems.registerModItems();
+
 	}
 }

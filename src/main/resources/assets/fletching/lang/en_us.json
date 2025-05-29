@@ -1,3 +1,4 @@
 {
-  "container.fletching.fletching_name": "Fletching Table"
+  "container.fletching.fletching_name": "Fletching Table",
+  "item.fletching.special_arrow": "%sArrows"
 }

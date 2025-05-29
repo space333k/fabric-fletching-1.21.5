@@ -1,7 +1,7 @@
 package com.space333.fletching.screen;
 
-import com.space333.fletching.Fletching;
-import com.space333.fletching.util.FletchingRecipes;
+import com.space333.fletching.item.ModItems;
+import com.space333.fletching.util.ComponentHelper;
 import com.space333.fletching.util.ModTags;
 import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
@@ -15,7 +15,6 @@ import net.minecraft.item.*;
 import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.screen.*;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.math.BlockPos;
 
 public class FletchingScreenHandler extends ScreenHandler {
     public static final int INPUT1_X = 30;
@@ -103,35 +102,35 @@ public class FletchingScreenHandler extends ScreenHandler {
             outputCount = inputCount * ARROW_OUTPUT_RATIO;
         }
 
-        Item output = FletchingRecipes.getRecipeOutput(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem());
-
-        if (output != Items.AIR) {
-            outputStack = new ItemStack(output, outputCount);
-        }
+        outputStack = ComponentHelper.createComponents(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem());
+        outputStack.setCount(outputCount);
 
         this.result.setStack(0, outputStack);
     }
 
     private void updateTippedArrow(ItemStack arrowStack, ItemStack potionStack) {
-        ItemStack outputStack = ItemStack.EMPTY;
+        ItemStack outputStack = arrowStack.copy();
         if(arrowStack.isIn(ItemTags.ARROWS)) {
             int arrowCount = arrowStack.getCount();
             if(potionStack.getItem() == Items.POTION) {
                 int potionCount = potionStack.getCount();
                 PotionContentsComponent potionContentsComponent = potionStack.get(DataComponentTypes.POTION_CONTENTS);
-                outputStack = new ItemStack(Items.TIPPED_ARROW, Math.min(arrowCount, potionCount * POTION_ARROW_RATIO));
+                outputStack.setCount(Math.min(arrowCount, potionCount * POTION_ARROW_RATIO));
+                outputStack.remove(DataComponentTypes.POTION_CONTENTS);
                 outputStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
             }
             else if(potionStack.getItem() == Items.SPLASH_POTION) {
                 int potionCount = potionStack.getCount();
                 PotionContentsComponent potionContentsComponent = potionStack.get(DataComponentTypes.POTION_CONTENTS);
-                outputStack = new ItemStack(Items.TIPPED_ARROW, Math.min(arrowCount, potionCount * SPLASH_ARROW_RATIO));
+                outputStack.setCount(Math.min(arrowCount, potionCount * SPLASH_ARROW_RATIO));
+                outputStack.remove(DataComponentTypes.POTION_CONTENTS);
                 outputStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
             }
             else if(potionStack.getItem() == Items.LINGERING_POTION) {
                 int potionCount = potionStack.getCount();
                 PotionContentsComponent potionContentsComponent = potionStack.get(DataComponentTypes.POTION_CONTENTS);
-                outputStack = new ItemStack(Items.TIPPED_ARROW, Math.min(arrowCount, potionCount * LINGERING_ARROW_RATIO));
+                outputStack.setCount(Math.min(arrowCount, potionCount * LINGERING_ARROW_RATIO));
+                outputStack.remove(DataComponentTypes.POTION_CONTENTS);
                 outputStack.set(DataComponentTypes.POTION_CONTENTS, potionContentsComponent);
             }
         }

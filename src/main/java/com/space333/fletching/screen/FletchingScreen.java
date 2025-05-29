@@ -83,10 +83,6 @@ public class FletchingScreen extends HandledScreen<FletchingScreenHandler> {
         else if (cycle >= 3) {
             context.drawGuiTexture(RenderLayer::getGuiTextured, INGREDIENT_TEXTURE, SLOT_X, SLOT_Y, 18*3, 18*3);
         }
-
-
-
-
     }
 
     @Override

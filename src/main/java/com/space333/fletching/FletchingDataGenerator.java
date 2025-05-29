@@ -1,6 +1,7 @@
 package com.space333.fletching;
 
 import com.space333.fletching.datagen.ModItemTagProvider;
+import com.space333.fletching.datagen.ModModelProvider;
 import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 
@@ -10,5 +11,6 @@ public class FletchingDataGenerator implements DataGeneratorEntrypoint {
 		FabricDataGenerator.Pack pack = fabricDataGenerator.createPack();
 
 		pack.addProvider(ModItemTagProvider::new);
+		pack.addProvider(ModModelProvider::new);
 	}
 }

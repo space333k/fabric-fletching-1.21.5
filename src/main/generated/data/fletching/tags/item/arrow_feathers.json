@@ -1,5 +1,8 @@
 {
   "values": [
-    "minecraft:feather"
+    "minecraft:feather",
+    "minecraft:prismarine_shard",
+    "minecraft:phantom_membrane",
+    "minecraft:slime_ball"
   ]
 }
