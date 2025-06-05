@@ -1,12 +1,13 @@
 package com.space333.fletching;
 
 import com.space333.fletching.Component.ModDataComponentType;
-import com.space333.fletching.entity.custom.SpecialArrowEntity;
+import com.space333.fletching.entity.ModEntityType;
 import com.space333.fletching.item.ModItems;
 import com.space333.fletching.screen.ModScreenHandlers;
 import com.space333.fletching.util.ComponentHelper;
 import net.fabricmc.api.ModInitializer;
 
+import net.minecraft.block.DispenserBlock;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ChunkTicketType;
@@ -27,6 +28,8 @@ public class Fletching implements ModInitializer {
 		ModScreenHandlers.registerScreenHandlers();
 		ModDataComponentType.registerDataComponentTypes();
 		ModItems.registerModItems();
+		ModEntityType.registerModEntities();
 
+		DispenserBlock.registerProjectileBehavior(ModItems.CUSTOM_ARROW);
 	}
 }

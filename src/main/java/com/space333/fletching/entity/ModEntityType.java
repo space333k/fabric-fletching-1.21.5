@@ -13,7 +13,7 @@ import net.minecraft.util.Identifier;
 public class ModEntityType {
     public static final EntityType<SpecialArrowEntity> SPECIAL_ARROW = Registry.register(
             Registries.ENTITY_TYPE,
-            getKey("special_arrow"),
+            Identifier.of(Fletching.MOD_ID, "special_arrow"),
             EntityType.Builder.<SpecialArrowEntity>create(SpecialArrowEntity::new, SpawnGroup.MISC)
                     .dropsNothing()
                     .dimensions(0.5F, 0.5F)

@@ -4,15 +4,12 @@ import com.space333.fletching.Fletching;
 import com.space333.fletching.entity.ModEntityType;
 import com.space333.fletching.item.ModItems;
 import com.space333.fletching.util.ComponentHelper;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.*;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageSources;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
@@ -22,18 +19,18 @@ import net.minecraft.entity.mob.EndermiteEntity;
 import net.minecraft.entity.passive.FoxEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.entity.projectile.thrown.EnderPearlEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.particle.EntityEffectParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.*;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.TeleportTarget;
@@ -43,6 +40,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static com.space333.fletching.util.ArrowEffect.*;
+
 public class SpecialArrowEntity extends PersistentProjectileEntity {
 	private static final int MAX_POTION_DURATION_TICKS = 600;
 	private static final int NO_POTION_COLOR = -1;
@@ -50,8 +49,10 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 	private static final byte PARTICLE_EFFECT_STATUS = 0;
 
 	private long chunkTicketExpiryTicks = 0L;
+	public int floatingTimer = 0;
+	public int FLOATING_LIMIT = 200;
 
-	private List<String> effects = List.of("default, default, default");
+	private List<String> effects = List.of(DEFAULT, DEFAULT, DEFAULT);
 
 	public SpecialArrowEntity(EntityType<? extends SpecialArrowEntity> entityType, World world) {
 		super(entityType, world);
@@ -61,12 +62,14 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 		super(ModEntityType.SPECIAL_ARROW, x, y, z, world, stack, shotFrom);
 		this.effects = ComponentHelper.getComponents(this.getItemStack());
 		this.initColor();
+		setStrength();
 	}
 
 	public SpecialArrowEntity(World world, LivingEntity owner, ItemStack stack, @Nullable ItemStack shotFrom) {
 		super(ModEntityType.SPECIAL_ARROW, owner, world, stack, shotFrom);
 		this.effects = ComponentHelper.getComponents(this.getItemStack());
 		this.initColor();
+		setStrength();
 	}
 
 	private PotionContentsComponent getPotionContents() {
@@ -74,7 +77,6 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 	}
 
 	private float getPotionDurationScale() {
-		Fletching.LOGGER.info("getPotion");
 		return this.getItemStack().getOrDefault(DataComponentTypes.POTION_DURATION_SCALE, 1.0F);
 	}
 
@@ -87,10 +89,25 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 	protected void setStack(ItemStack stack) {
 		super.setStack(stack);
 		this.initColor();
+		setStrength();
+	}
+
+	public void setStrength() {
+		if(hasEffect(TIER2)) {
+			this.setDamage(4);
+		}
+		if(hasEffect(TIER3)) {
+			this.setDamage(6);
+		}
+		if(hasEffect(TIER4)) {
+			this.setDamage(10);
+		}
+		if(hasEffect(LIGHTWEIGHT)) {
+			this.setDamage(1);
+		}
 	}
 
 	private void initColor() {
-		Fletching.LOGGER.info("INIT");
 		PotionContentsComponent potionContentsComponent = this.getPotionContents();
 		this.dataTracker.set(COLOR, potionContentsComponent.equals(PotionContentsComponent.DEFAULT) ? -1 : potionContentsComponent.getColor());
 	}
@@ -107,10 +124,17 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 
 	@Override
 	public void tick() {
-		int i = ChunkSectionPos.getSectionCoordFloored(this.getPos().getX());
-		int j = ChunkSectionPos.getSectionCoordFloored(this.getPos().getZ());
+		int x = ChunkSectionPos.getSectionCoordFloored(this.getPos().getX());
+		int y = ChunkSectionPos.getSectionCoordFloored(this.getPos().getZ());
 
-		super.tick();
+		if(hasEffect(PHASING)) {
+			phasingLogic();
+		}
+		else {
+			super.tick();
+		}
+
+
 		if (this.getWorld().isClient) {
 			if (this.isInGround()) {
 				if (this.inGroundTime % 5 == 0) {
@@ -121,13 +145,13 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 			}
 		} else if (this.isInGround() && this.inGroundTime != 0 && !this.getPotionContents().equals(PotionContentsComponent.DEFAULT) && this.inGroundTime >= 600) {
 			this.getWorld().sendEntityStatus(this, (byte)0);
-			this.setStack(new ItemStack(ModItems.SPECIAL_ARROW));
+			this.setStack(new ItemStack(ModItems.CUSTOM_ARROW));
 		}
 
 		if (this.isAlive()) {
 			BlockPos blockPos = BlockPos.ofFloored(this.getPos());
-			if ((--this.chunkTicketExpiryTicks <= 0L || i != ChunkSectionPos.getSectionCoord(blockPos.getX()) || j != ChunkSectionPos.getSectionCoord(blockPos.getZ()))
-					&& this.getOwner() instanceof ServerPlayerEntity serverPlayerEntity) {
+			if ((--this.chunkTicketExpiryTicks <= 0L || x != ChunkSectionPos.getSectionCoord(blockPos.getX()) || y != ChunkSectionPos.getSectionCoord(blockPos.getZ()))
+					&& this.getOwner() instanceof ServerPlayerEntity serverPlayerEntity && hasEffect(TELEPORTING)) {
 				this.chunkTicketExpiryTicks = handleTeleportingArrow();
 			}
 		}
@@ -147,6 +171,7 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 		world.getChunkManager().addTicket(Fletching.ARROW_TICKET, chunkPos, 2);
 		return Fletching.ARROW_TICKET.expiryTicks();
 	}
+
 
 	private void spawnParticles(int amount) {
 		int i = this.getColor();
@@ -179,54 +204,88 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 	@Override
 	protected void onBlockHit(BlockHitResult blockHitResult) {
 		super.onBlockHit(blockHitResult);
-
 		applyOnBlockHitEffects();
 	}
 
 	public void applyOnBlockHitEffects() {
-		if(hasEffect("teleporting")) {
+		if(hasEffect(TELEPORTING)) {
 			teleport();
 		}
-		if(hasEffect("exploding")) {
+		if(hasEffect(EXPLODING)) {
 			this.getWorld().createExplosion(this, this.getX(), this.getY(), this.getZ(), 1, false, World.ExplosionSourceType.MOB);
 			this.discard();
 		}
-		if(hasEffect("lightweight")) {
+		if(hasEffect(LIGHTWEIGHT)) {
 			this.discard();
 		}
 	}
 
 	public void applyOnHitEffects(LivingEntity target) {
 		Entity entity = this.getEffectCause();
-		if(hasEffect("flame")) {
+		if(hasEffect(FLAME)) {
 			target.setOnFireFor(5);
 		}
-		if(hasEffect("knockback")) {
+		if(hasEffect(KNOCKBACK)) {
 			double e = Math.max(0.0, 1.0 - target.getAttributeValue(EntityAttributes.KNOCKBACK_RESISTANCE));
 			Vec3d vec3d = this.getVelocity().multiply(1.0, 0.0, 1.0).normalize().multiply(1 * 0.6 * e);
 			if (vec3d.lengthSquared() > 0.0) {
 				target.addVelocity(vec3d.x, 0.1, vec3d.z);
 			}
 		}
-		if(hasEffect("spectral")) {
+		if(hasEffect(SPECTRAL)) {
 			StatusEffectInstance statusEffectInstance = new StatusEffectInstance(StatusEffects.GLOWING, 200, 0);
 			target.addStatusEffect(statusEffectInstance, entity);
 		}
-		if(hasEffect("exploding")) {
+		if(hasEffect(EXPLODING)) {
 			this.getWorld().createExplosion(this, this.getX(), this.getY(), this.getZ(), 1, false, World.ExplosionSourceType.MOB);
 			this.discard();
 		}
-		if(hasEffect("teleporting")) {
+		if(hasEffect(TELEPORTING)) {
 			teleport();
 		}
-		if(hasEffect("teleporter")) {
+		if(hasEffect(TELEPORTER)) {
 			teleporter(target);
 		}
 	}
 
 	@Override
+	protected ProjectileDeflection hitOrDeflect(HitResult hitResult) {
+		if(!hasEffect(BOUNCING) || hitResult.getType() == HitResult.Type.ENTITY) {
+			return super.hitOrDeflect(hitResult);
+		}
+		else if (hitResult.getType() == HitResult.Type.BLOCK) {
+			BlockHitResult blockHitResult = (BlockHitResult)hitResult;
+			BlockPos pos = blockHitResult.getBlockPos();
+			Block block = this.getWorld().getBlockState(pos).getBlock();
+			if(block != Blocks.TARGET) {
+				this.setVelocity(this.getVelocity().multiply(0.80));
+			}
+			else {
+				return super.hitOrDeflect(hitResult);
+			}
+			this.setInGround(false);
+			bounce(blockHitResult);
+
+			if(this.getVelocity().length() <= 0.05) {
+				super.hitOrDeflect(hitResult);
+			}
+
+			return ProjectileDeflection.SIMPLE;
+		}
+		return ProjectileDeflection.NONE;
+	}
+
+	public void bounce(BlockHitResult blockHitResult) {
+		Vec3d velocity = this.getVelocity();
+		Vec3d normal = blockHitResult.getSide().getDoubleVector().normalize();
+		Vec3d reflected = velocity.subtract(normal.multiply(2 * velocity.dotProduct(normal)));
+
+		this.setVelocity(reflected);
+	}
+
+	@Override
 	protected ItemStack getDefaultItemStack() {
-		return new ItemStack(ModItems.SPECIAL_ARROW);
+		return new ItemStack(ModItems.CUSTOM_ARROW);
 	}
 
 	@Override
@@ -259,11 +318,13 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 	@Override
 	protected double getGravity() {
 		Vec3d velocity = this.getVelocity();
-		if(hasEffect("floating") && !(Math.abs(velocity.x) <= 0.05 && Math.abs(velocity.z) <= 0.05)) {
-			this.setVelocity(velocity.multiply(1.02));
+		if(hasEffect(FLOATING) && !(Math.abs(velocity.x) <= 0.05 && Math.abs(velocity.z) <= 0.05) && this.floatingTimer < FLOATING_LIMIT) {
+			this.floatingTimer++;
+
+			this.setVelocity(velocity.multiply(1.011));
 			return 0.000;
 		}
-		else if(hasEffect( "lightweight")) {
+		else if(hasEffect(LIGHTWEIGHT)) {
 			return super.getGravity()/2;
 		}
 		return super.getGravity();
@@ -271,7 +332,7 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 
 	@Override
 	protected float getDragInWater() {
-		if(hasEffect("marine")) {
+		if(hasEffect(MARINE)) {
 			return 0.99F;
 		}
 		return super.getDragInWater();
@@ -279,13 +340,13 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 
 	@Override
 	public byte getPierceLevel() {
-		if(hasEffect("piercing")) {
+		if(hasEffect(PIERCING)) {
 			return 10;
 		}
 		return super.getPierceLevel();
 	}
 
-	private boolean hasEffect(String effect) {
+	public boolean hasEffect(String effect) {
 		return this.effects.contains(effect);
 	}
 
@@ -376,4 +437,54 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 		}
 	}
 
+	public void phasingLogic() {
+		if (this.shake > 0) {
+			this.shake--;
+		}
+
+		if (this.isTouchingWaterOrRain()) {
+			this.extinguish();
+		}
+		this.inGroundTime = 0;
+
+		Vec3d position = this.getPos();
+		Vec3d velocity = this.getVelocity();
+
+		if (this.isTouchingWater()) {
+			this.setVelocity(velocity.multiply(this.getDragInWater()));
+		}
+		else {
+			this.setVelocity(velocity.multiply(0.99));
+		}
+
+		if (this.isCritical()) {
+			for (int i = 0; i < 4; i++) {
+				this.getWorld()
+						.addParticleClient(
+								ParticleTypes.CRIT, position.x + velocity.x * i / 4.0, position.y + velocity.y * i / 4.0, position.z + velocity.z * i / 4.0, -velocity.x, -velocity.y + 0.2, -velocity.z
+						);
+			}
+		}
+
+		float f = (float)(MathHelper.atan2(velocity.x, velocity.z) * 180.0F / (float)Math.PI);
+		float g = (float)(MathHelper.atan2(velocity.y, velocity.horizontalLength()) * 180.0F / (float)Math.PI);
+
+		this.setPitch(updateRotation(this.getPitch(), g));
+		this.setYaw(updateRotation(this.getYaw(), f));
+
+		Vec3d newPosition = position.add(velocity);
+		EntityHitResult entityHitResult = this.getEntityCollision(position, newPosition);
+
+		if(entityHitResult == null) {
+			this.setPosition(newPosition);
+			this.tickBlockCollision();
+		}
+		else if (this.isAlive() && !this.noClip) {
+			this.hitOrDeflect(entityHitResult);
+			this.velocityDirty = true;
+		}
+
+		this.applyGravity();
+		super.baseTick();
+	}
 }

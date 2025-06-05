@@ -1,6 +1,5 @@
 package com.space333.fletching.screen;
 
-import com.space333.fletching.item.ModItems;
 import com.space333.fletching.util.ComponentHelper;
 import com.space333.fletching.util.ModTags;
 import net.minecraft.block.Blocks;
@@ -78,7 +77,7 @@ public class FletchingScreenHandler extends ScreenHandler {
             updateCraftingArrow(featherStack, shaftStack, tipStack);
             isCrafting = true;
         }
-        else if(featherStack.isEmpty() && !shaftStack.isEmpty() && !tipStack.isEmpty()) {
+        else if(featherStack.isEmpty() && shaftStack.isIn(ItemTags.ARROWS) && tipStack.contains(DataComponentTypes.POTION_CONTENTS)) {
             updateTippedArrow(shaftStack, tipStack);
             isTipping = true;
         }
@@ -102,7 +101,11 @@ public class FletchingScreenHandler extends ScreenHandler {
             outputCount = inputCount * ARROW_OUTPUT_RATIO;
         }
 
-        outputStack = ComponentHelper.createComponents(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem());
+        if(tipStack.isOf(Items.NETHERITE_INGOT)) {
+            outputCount = 64;
+        }
+
+        outputStack = ComponentHelper.createArrow(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem());
         outputStack.setCount(outputCount);
 
         this.result.setStack(0, outputStack);
@@ -110,6 +113,13 @@ public class FletchingScreenHandler extends ScreenHandler {
 
     private void updateTippedArrow(ItemStack arrowStack, ItemStack potionStack) {
         ItemStack outputStack = arrowStack.copy();
+        if(outputStack.getItem() == Items.ARROW) {
+            outputStack = new ItemStack(Items.TIPPED_ARROW);
+        }
+        else if(outputStack.getItem() == Items.SPECTRAL_ARROW) {
+            outputStack = ComponentHelper.createArrow(Items.FEATHER, Items.STICK, Items.GLOWSTONE_DUST);
+        }
+
         if(arrowStack.isIn(ItemTags.ARROWS)) {
             int arrowCount = arrowStack.getCount();
             if(potionStack.getItem() == Items.POTION) {
@@ -142,6 +152,13 @@ public class FletchingScreenHandler extends ScreenHandler {
         int outputCount = itemStack.getCount();
 
         if(isCrafting) {
+            if(this.input.getStack(INPUT3_ID).isOf(Items.NETHERITE_INGOT)) {
+                for(int i = 0; i <= INPUT3_ID; i++) {
+                    this.input.removeStack(i, 1);
+                }
+                return;
+            }
+
             int inputTake = outputCount/ARROW_OUTPUT_RATIO;
 
             for(int i = 0; i <= INPUT3_ID; i++) {

@@ -3,9 +3,15 @@
   "package": "com.space333.fletching.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "CrossbowItemMixin",
     "FletchingTableBlockMixin",
-    "ItemStackMixin",
-    "potion.ItemsMixin"
+    "ItemsMixin",
+    "PersistentProjectileEntityMixin",
+    "disableEnchantments.EnchantmentHelperMixin",
+    "disableEnchantments.EnchantmentScreenHandlerMixin",
+    "disableEnchantments.EnchantRandomlyLootFunctionMixin",
+    "disableEnchantments.ItemGroupMixin",
+    "disableEnchantments.SetEnchantmentsLootFunctionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

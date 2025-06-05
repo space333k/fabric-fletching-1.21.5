@@ -1,4 +1,12 @@
 {
   "container.fletching.fletching_name": "Fletching Table",
-  "item.fletching.special_arrow": "%sArrows"
+
+  "item.fletching.special_arrow": "%sArrows %s",
+  "entity.fletching.special_arrow": "%sArrows %s",
+
+  "entity.minecraft.arrow": "Arrow I",
+  "entity.minecraft.spectral_arrow": "Spectral Arrow I",
+
+  "item.minecraft.arrow": "Arrow I",
+  "item.minecraft.spectral_arrow": "Spectral Arrow I"
 }

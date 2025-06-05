@@ -1,7 +1,7 @@
 package com.space333.fletching;
 
 import com.space333.fletching.entity.ModEntityType;
-import com.space333.fletching.entity.client.SpecialArrowRenderer;
+import com.space333.fletching.entity.client.CustomArrowRenderer;
 import com.space333.fletching.screen.FletchingScreen;
 import com.space333.fletching.screen.ModScreenHandlers;
 import net.fabricmc.api.ClientModInitializer;
@@ -12,6 +12,6 @@ public class FletchingClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         HandledScreens.register(ModScreenHandlers.FLETCHING_SCREEN_HANDLER, FletchingScreen::new);
-        EntityRendererRegistry.register(ModEntityType.SPECIAL_ARROW, SpecialArrowRenderer::new);
+        EntityRendererRegistry.register(ModEntityType.SPECIAL_ARROW, CustomArrowRenderer::new);
     }
 }

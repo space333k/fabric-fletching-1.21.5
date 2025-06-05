@@ -7,7 +7,6 @@ import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
 import net.minecraft.item.Items;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.registry.tag.ItemTags;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -24,8 +23,8 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                 .add(Items.CHORUS_FRUIT)
                 .add(Items.AMETHYST_SHARD)
                 .add(Items.FIRE_CHARGE)
-                .add(Items.ECHO_SHARD)
                 .add(Items.GLOW_INK_SAC)
+                .add(Items.GLOWSTONE_DUST)
                 .add(Items.IRON_INGOT)
                 .add(Items.DIAMOND)
                 .add(Items.NETHERITE_INGOT);
@@ -44,6 +43,6 @@ public class ModItemTagProvider extends FabricTagProvider.ItemTagProvider {
                 .add(Items.SLIME_BALL);
 
         getOrCreateTagBuilder(ItemTags.ARROWS)
-                .add(ModItems.SPECIAL_ARROW);
+                .add(ModItems.CUSTOM_ARROW);
     }
 }
