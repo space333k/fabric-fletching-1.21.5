@@ -3,6 +3,7 @@
   "package": "com.space333.fletching.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "ArrowEntityMixin",
     "CrossbowItemMixin",
     "FletchingTableBlockMixin",
     "ItemsMixin",

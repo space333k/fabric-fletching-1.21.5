@@ -1,5 +1,6 @@
 package com.space333.fletching.screen;
 
+import com.space333.fletching.Fletching;
 import com.space333.fletching.util.ComponentHelper;
 import com.space333.fletching.util.ModTags;
 import net.minecraft.block.Blocks;
@@ -84,9 +85,6 @@ public class FletchingScreenHandler extends ScreenHandler {
         else {
             this.result.setStack(0, ItemStack.EMPTY);
         }
-
-
-
     }
 
     private void updateCraftingArrow(ItemStack featherStack, ItemStack shaftStack, ItemStack tipStack) {
@@ -105,19 +103,23 @@ public class FletchingScreenHandler extends ScreenHandler {
             outputCount = 64;
         }
 
-        outputStack = ComponentHelper.createArrow(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem());
+        outputStack = ComponentHelper.createArrow(featherStack.getItem(), shaftStack.getItem(), tipStack.getItem(), true);
         outputStack.setCount(outputCount);
 
         this.result.setStack(0, outputStack);
     }
 
     private void updateTippedArrow(ItemStack arrowStack, ItemStack potionStack) {
-        ItemStack outputStack = arrowStack.copy();
-        if(outputStack.getItem() == Items.ARROW) {
+        ItemStack outputStack;
+        if(arrowStack.getItem() == Items.ARROW) {
             outputStack = new ItemStack(Items.TIPPED_ARROW);
         }
-        else if(outputStack.getItem() == Items.SPECTRAL_ARROW) {
-            outputStack = ComponentHelper.createArrow(Items.FEATHER, Items.STICK, Items.GLOWSTONE_DUST);
+        else if(arrowStack.getItem() == Items.SPECTRAL_ARROW) {
+            outputStack = ComponentHelper.createArrow(Items.FEATHER, Items.STICK, Items.GLOWSTONE_DUST, false);
+
+        }
+        else {
+            outputStack = arrowStack.copy();
         }
 
         if(arrowStack.isIn(ItemTags.ARROWS)) {

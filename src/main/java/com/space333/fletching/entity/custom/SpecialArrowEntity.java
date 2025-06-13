@@ -218,6 +218,11 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 		if(hasEffect(LIGHTWEIGHT)) {
 			this.discard();
 		}
+		if(this.getItemStack().contains(DataComponentTypes.POTION_CONTENTS)) {
+			if(this.getWorld() instanceof ServerWorld world) {
+				this.spawnAreaEffectCloud(world, this.getItemStack());
+			}
+		}
 	}
 
 	public void applyOnHitEffects(LivingEntity target) {
@@ -246,6 +251,26 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 		if(hasEffect(TELEPORTER)) {
 			teleporter(target);
 		}
+		if(this.getItemStack().contains(DataComponentTypes.POTION_CONTENTS)) {
+			if(this.getWorld() instanceof ServerWorld world) {
+				this.spawnAreaEffectCloud(world, this.getItemStack());
+			}
+		}
+	}
+
+	public void spawnAreaEffectCloud(ServerWorld world, ItemStack stack) {
+		AreaEffectCloudEntity areaEffectCloudEntity = new AreaEffectCloudEntity(this.getWorld(), this.getX(), this.getY(), this.getZ());
+		if (this.getOwner() instanceof LivingEntity livingEntity) {
+			areaEffectCloudEntity.setOwner(livingEntity);
+		}
+
+		areaEffectCloudEntity.setRadius(3.0F);
+		areaEffectCloudEntity.setRadiusOnUse(-0.5F);
+		areaEffectCloudEntity.setDuration(60);
+		areaEffectCloudEntity.setWaitTime(10);
+		areaEffectCloudEntity.setRadiusGrowth(-areaEffectCloudEntity.getRadius() / areaEffectCloudEntity.getDuration());
+		areaEffectCloudEntity.copyComponentsFrom(stack);
+		world.spawnEntity(areaEffectCloudEntity);
 	}
 
 	@Override

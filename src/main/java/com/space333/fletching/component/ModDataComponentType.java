@@ -1,4 +1,4 @@
-package com.space333.fletching.Component;
+package com.space333.fletching.component;
 
 import com.space333.fletching.Fletching;
 import net.minecraft.component.ComponentType;

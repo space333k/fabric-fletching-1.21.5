@@ -11,7 +11,7 @@ import net.minecraft.util.Identifier;
 
 @Environment(EnvType.CLIENT)
 public class CustomArrowRenderer extends ProjectileEntityRenderer<SpecialArrowEntity, ProjectileEntityRenderState> {
-    public static final Identifier TEXTURE = Identifier.of(Fletching.MOD_ID,"textures/entity/projectiles/special_arrow.png");
+    public static final Identifier TEXTURE = Identifier.of(Fletching.MOD_ID,"textures/entity/projectiles/custom_arrow.png");
 
     public CustomArrowRenderer(EntityRendererFactory.Context context) {
         super(context);

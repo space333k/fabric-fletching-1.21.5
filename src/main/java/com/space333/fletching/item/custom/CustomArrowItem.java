@@ -1,6 +1,6 @@
 package com.space333.fletching.item.custom;
 
-import com.space333.fletching.Component.ModDataComponentType;
+import com.space333.fletching.component.ModDataComponentType;
 import com.space333.fletching.entity.custom.SpecialArrowEntity;
 import com.space333.fletching.util.ComponentHelper;
 import net.minecraft.component.DataComponentTypes;

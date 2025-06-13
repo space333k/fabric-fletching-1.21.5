@@ -1,5 +1,7 @@
 package com.space333.fletching.util;
 
+import com.space333.fletching.Fletching;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +12,7 @@ public class ArrowEffect {
 
     public static final String MARINE = "Marine";
     public static final String PHASING = "Phasing";
-    public static final String BOUNCING = "Bouncing";
+    public static final String BOUNCING = "Bouncy";
 
     public static final String FLAME = "Flame";
     public static final String KNOCKBACK = "Knockback";

@@ -1,11 +1,12 @@
 package com.space333.fletching.util;
 
-import com.space333.fletching.Component.ModDataComponentType;
+import com.space333.fletching.component.ModDataComponentType;
 import com.space333.fletching.item.ModItems;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -24,17 +25,17 @@ public class ComponentHelper {
     );
 
 
-    public static ItemStack createArrow(Item feather, Item shaft, Item tip) {
+    public static ItemStack createArrow(Item feather, Item shaft, Item tip, boolean toVanilla) {
         ItemStack output = ItemStack.EMPTY;
 
         if(isValidRecipe(feather, shaft, tip)) {
             output = new ItemStack(ModItems.CUSTOM_ARROW);
-            output = addComponents(feather, shaft, tip, output);
+            output = addComponents(feather, shaft, tip, output, toVanilla);
         }
         return output;
     }
 
-    public static ItemStack addComponents(Item feather, Item shaft, Item tip, ItemStack arrow) {
+    public static ItemStack addComponents(Item feather, Item shaft, Item tip, ItemStack arrow, boolean toVanilla) {
         if(!arrow.contains(ModDataComponentType.ARROW_FEATHER)) {
             arrow.set(ModDataComponentType.ARROW_FEATHER, FEATHER_ID_MAP.get(feather));
         }
@@ -45,7 +46,12 @@ public class ComponentHelper {
             arrow.set(ModDataComponentType.ARROW_TIP, TIP_ID_MAP.get(tip));
         }
 
-        return replaceToVanilla(arrow);
+        if(toVanilla) {
+            return replaceToVanilla(arrow);
+        }
+        else {
+            return arrow;
+        }
     }
 
     public static ItemStack replaceToVanilla(ItemStack arrow) {
