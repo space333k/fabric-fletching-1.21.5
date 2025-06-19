@@ -4,9 +4,5 @@
   "item.fletching.custom_arrow": "%sArrows %s",
   "entity.fletching.custom_arrow": "%sArrows %s",
 
-  "entity.minecraft.arrow": "Arrow I",
-  "entity.minecraft.spectral_arrow": "Spectral Arrow I",
-
-  "item.minecraft.arrow": "Arrow I",
-  "item.minecraft.spectral_arrow": "Spectral Arrow I"
+  "text.fletching.keybinding.changeShootingArrow": "Change Arrow while Shooting"
 }

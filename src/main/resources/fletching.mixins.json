@@ -4,9 +4,9 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ArrowEntityMixin",
+    "BowItemMixin",
     "CrossbowItemMixin",
     "FletchingTableBlockMixin",
-    "ItemsMixin",
     "PersistentProjectileEntityMixin",
     "disableEnchantments.EnchantmentHelperMixin",
     "disableEnchantments.EnchantmentScreenHandlerMixin",
@@ -16,5 +16,8 @@
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  },
+  "client": [
+    "InGameHudMixin"
+  ]
 }
