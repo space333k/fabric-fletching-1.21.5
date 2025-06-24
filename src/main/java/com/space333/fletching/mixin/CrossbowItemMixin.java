@@ -1,10 +1,11 @@
 package com.space333.fletching.mixin;
 
-import com.space333.fletching.Fletching;
 import com.space333.fletching.FletchingClient;
+import com.space333.fletching.client.SwitchArrowPayload;
 import com.space333.fletching.component.LoadedProjectileComponent;
 import com.space333.fletching.component.ModDataComponentType;
 import com.space333.fletching.util.ArrowSelection;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ChargedProjectilesComponent;
 import net.minecraft.entity.LivingEntity;
@@ -68,29 +69,6 @@ public class CrossbowItemMixin {
         ItemStack weapon = user.getStackInHand(hand);
         ItemStack nextArrow = ArrowSelection.switchArrow(user, ItemStack.EMPTY, weapon);
         weapon.set(ModDataComponentType.LOADED_ARROW, LoadedProjectileComponent.of(nextArrow));
-    }
-
-    @Inject(method = "usageTick", at = @At(value = "TAIL"))
-    public void changeProjectile(World world, LivingEntity user, ItemStack weapon, int remainingUseTicks, CallbackInfo ci) {
-        if (!world.isClient) {
-            boolean changeArrowPressed = FletchingClient.changeShootingArrow.isPressed();
-            if(changeArrowPressed && !alreadyChangedArrow && weapon.contains(ModDataComponentType.LOADED_ARROW)) {
-                LoadedProjectileComponent loadedProjectileComponent = weapon.get(ModDataComponentType.LOADED_ARROW);
-
-                ItemStack nextArrow;
-                if(loadedProjectileComponent == null) {
-                    nextArrow = ArrowSelection.switchArrow(user, ItemStack.EMPTY, weapon);
-                }
-                else {
-                    ItemStack arrow = loadedProjectileComponent.getProjectile();
-                    nextArrow = ArrowSelection.switchArrow(user, arrow, weapon);
-                }
-                weapon.remove(ModDataComponentType.LOADED_ARROW);
-                weapon.set(ModDataComponentType.LOADED_ARROW, LoadedProjectileComponent.of(nextArrow));
-            }
-            alreadyChangedArrow = changeArrowPressed;
-        }
-
     }
 
     @Redirect(method = "loadProjectiles", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getProjectileType(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;"))

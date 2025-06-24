@@ -1,9 +1,12 @@
 package com.space333.fletching.mixin;
 
+import com.space333.fletching.Fletching;
 import com.space333.fletching.FletchingClient;
+import com.space333.fletching.client.SwitchArrowPayload;
 import com.space333.fletching.component.LoadedProjectileComponent;
 import com.space333.fletching.component.ModDataComponentType;
 import com.space333.fletching.util.ArrowSelection;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BowItem;
@@ -39,25 +42,18 @@ public abstract class BowItemMixin extends RangedWeaponItem {
     }
 
     @Override
-    public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
-        if (!world.isClient) {
-            boolean changeArrowPressed = FletchingClient.changeShootingArrow.isPressed();
-            if(changeArrowPressed && !alreadyChangedArrow && stack.contains(ModDataComponentType.LOADED_ARROW)) {
-                LoadedProjectileComponent loadedProjectileComponent = stack.get(ModDataComponentType.LOADED_ARROW);
+    public void usageTick(World world, LivingEntity user, ItemStack weapon, int remainingUseTicks) {
 
-                ItemStack nextArrow;
-                if(loadedProjectileComponent == null) {
-                    nextArrow = ArrowSelection.switchArrow(user, ItemStack.EMPTY, stack);
-                }
-                else {
-                    ItemStack arrow = loadedProjectileComponent.getProjectile();
-                    nextArrow = ArrowSelection.switchArrow(user, arrow, stack);
-                }
-                stack.remove(ModDataComponentType.LOADED_ARROW);
-                stack.set(ModDataComponentType.LOADED_ARROW, LoadedProjectileComponent.of(nextArrow));
+        /*
+        if(world.isClient) {
+            boolean changeArrowPressed = FletchingClient.changeShootingArrow.isPressed();
+            if(changeArrowPressed && !alreadyChangedArrow) {
+                ClientPlayNetworking.send(new SwitchArrowPayload(weapon));
             }
             alreadyChangedArrow = changeArrowPressed;
         }
+
+         */
 
     }
 
