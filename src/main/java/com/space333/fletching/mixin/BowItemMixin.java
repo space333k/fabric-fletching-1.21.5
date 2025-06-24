@@ -58,13 +58,13 @@ public abstract class BowItemMixin extends RangedWeaponItem {
     }
 
     @Redirect(method = "onStoppedUsing", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;getProjectileType(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;"))
-    private ItemStack loadProjectile(PlayerEntity instance, ItemStack weapon) {
-        if(weapon.contains(ModDataComponentType.LOADED_ARROW)) {
-            ItemStack projectile = Objects.requireNonNull(weapon.get(ModDataComponentType.LOADED_ARROW)).getProjectile();
+    private ItemStack loadProjectile(PlayerEntity shooter, ItemStack weapon) {
+        if(weapon.contains(ModDataComponentType.LOADED_ARROW) && shooter instanceof PlayerEntity playerShooter) {
+            ItemStack projectile = ArrowSelection.getArrow(Objects.requireNonNull(weapon.get(ModDataComponentType.LOADED_ARROW)).getProjectile(), playerShooter);
             weapon.remove(ModDataComponentType.LOADED_ARROW);
             return projectile;
         }
-        return instance.getProjectileType(weapon);
+        return shooter.getProjectileType(weapon);
     }
 
 }

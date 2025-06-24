@@ -203,8 +203,8 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 
 	@Override
 	protected void onBlockHit(BlockHitResult blockHitResult) {
-		super.onBlockHit(blockHitResult);
 		applyOnBlockHitEffects();
+		super.onBlockHit(blockHitResult);
 	}
 
 	public void applyOnBlockHitEffects() {
@@ -221,7 +221,9 @@ public class SpecialArrowEntity extends PersistentProjectileEntity {
 		if(this.getItemStack().contains(DataComponentTypes.POTION_CONTENTS)) {
 			if(this.getWorld() instanceof ServerWorld world) {
 				this.spawnAreaEffectCloud(world, this.getItemStack());
+				this.getItemStack().remove(DataComponentTypes.POTION_CONTENTS);
 			}
+
 		}
 	}
 

@@ -145,12 +145,11 @@ public class ComponentHelper {
         TIP_ID_MAP.put(Items.NETHERITE_INGOT, TIER4);
     }
 
-    public static ItemStack randomArrowGenerator() {
+    public static ItemStack randomArrowGenerator(Random random) {
         ItemStack arrow = new ItemStack(ModItems.CUSTOM_ARROW);
-        Random rand = new Random();
-        arrow.set(ModDataComponentType.ARROW_FEATHER, FEATHER_ID_MAP.values().stream().toList().get(rand.nextInt(FEATHER_ID_MAP.size())));
-        arrow.set(ModDataComponentType.ARROW_SHAFT, SHAFT_ID_MAP.values().stream().toList().get(rand.nextInt(SHAFT_ID_MAP.size())));
-        arrow.set(ModDataComponentType.ARROW_TIP, TIP_ID_MAP.values().stream().toList().get(rand.nextInt(TIP_ID_MAP.size())));
+        arrow.set(ModDataComponentType.ARROW_FEATHER, FEATHER_ID_MAP.values().stream().toList().get(random.nextInt(FEATHER_ID_MAP.size())));
+        arrow.set(ModDataComponentType.ARROW_SHAFT, SHAFT_ID_MAP.values().stream().toList().get(random.nextInt(SHAFT_ID_MAP.size())));
+        arrow.set(ModDataComponentType.ARROW_TIP, TIP_ID_MAP.values().stream().toList().get(random.nextInt(TIP_ID_MAP.size())));
 
         return replaceToVanilla(arrow);
     }

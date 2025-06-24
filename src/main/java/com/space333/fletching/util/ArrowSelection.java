@@ -19,7 +19,6 @@ public class ArrowSelection {
                 Predicate<ItemStack> predicate = ((RangedWeaponItem)weapon.getItem()).getHeldProjectiles();
                 return getNextArrow(arrow, playerShooter, predicate);
             }
-
         }
         return arrow;
     }
@@ -28,9 +27,7 @@ public class ArrowSelection {
         boolean arrowFound = false;
         boolean firstArrowCheck = true;
         ItemStack firstArrow = arrow.copy();
-
         Inventory inventory = playerShooter.getInventory();
-
 
         ItemStack itemStack = RangedWeaponItem.getHeldProjectile(playerShooter, predicate);
         if (predicate.test(itemStack)) {
@@ -63,6 +60,19 @@ public class ArrowSelection {
                     firstArrow = itemStack.copy();
                     firstArrowCheck = false;
                 }
+            }
+        }
+        return firstArrow;
+    }
+
+    public static ItemStack getArrow(ItemStack arrow, PlayerEntity playerShooter) {
+        ItemStack firstArrow = arrow.copy();
+        Inventory inventory = playerShooter.getInventory();
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack itemStack = inventory.getStack(i);
+
+            if(ItemStack.areItemsAndComponentsEqual(arrow, itemStack)) {
+                return itemStack;
             }
         }
         return firstArrow;

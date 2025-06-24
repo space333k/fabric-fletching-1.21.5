@@ -1,6 +1,5 @@
 package com.space333.fletching.screen;
 
-import com.space333.fletching.Fletching;
 import com.space333.fletching.util.ComponentHelper;
 import com.space333.fletching.util.ModTags;
 import net.minecraft.block.Blocks;

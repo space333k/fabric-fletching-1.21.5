@@ -73,8 +73,8 @@ public class CrossbowItemMixin {
 
     @Redirect(method = "loadProjectiles", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getProjectileType(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;"))
     private static ItemStack loadProjectile(LivingEntity shooter, ItemStack weapon) {
-        if(weapon.contains(ModDataComponentType.LOADED_ARROW)) {
-            return Objects.requireNonNull(weapon.get(ModDataComponentType.LOADED_ARROW)).getProjectile();
+        if(weapon.contains(ModDataComponentType.LOADED_ARROW) && shooter instanceof PlayerEntity playerShooter) {
+            return ArrowSelection.getArrow(Objects.requireNonNull(weapon.get(ModDataComponentType.LOADED_ARROW)).getProjectile(), playerShooter);
         }
         return shooter.getProjectileType(weapon);
     }
